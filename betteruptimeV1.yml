@@ -10,8 +10,12 @@ metadata:
   namespace: betterstack
 type: Opaque
 stringData:
-  DATABASE_URL: "postgresql://neondb_owner:npg_f90BoFWtCOmE@ep-silent-pine-amujjwot-pooler.c-5.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
-  JWT_SECRET: "betteruptimemiyamaru123@"
+  DATABASE_URL: "REPLACE_WITH_DATABASE_URL"
+  JWT_SECRET: "REPLACE_WITH_BACKEND_JWT_SECRET"
+  NEXTAUTH_URL: "http://a24606d4123214fa996f222bd8488440-254637953.ap-south-1.elb.amazonaws.com"
+  NEXTAUTH_SECRET: "REPLACE_WITH_NEXTAUTH_SECRET"
+  GOOGLE_CLIENT_ID: "REPLACE_WITH_GOOGLE_CLIENT_ID"
+  GOOGLE_CLIENT_SECRET: "REPLACE_WITH_GOOGLE_CLIENT_SECRET"
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -23,6 +27,7 @@ data:
   REDIS_URL: "redis://redis:6379"
   REGION_ID: "us-east"
   NODE_OPTIONS: "--dns-result-order=ipv4first"
+  AUTH_TRUST_HOST: "true"
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -75,7 +80,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: adityavn03/betterstack1-backend:d96152c9b215f357339aab28bb1c0231b1030924
+          image: adityavn03/betterstack1-backend:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 3001
@@ -133,7 +138,7 @@ spec:
     spec:
       containers:
         - name: web
-          image: adityavn03/betterstack1-web:d96152c9b215f357339aab28bb1c0231b1030924
+          image: adityavn03/betterstack1-web:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 3000
@@ -147,6 +152,31 @@ spec:
                 configMapKeyRef:
                   name: betterstack-config
                   key: BACKEND_URL
+            - name: AUTH_TRUST_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: betterstack-config
+                  key: AUTH_TRUST_HOST
+            - name: NEXTAUTH_URL
+              valueFrom:
+                secretKeyRef:
+                  name: betterstack-secrets
+                  key: NEXTAUTH_URL
+            - name: NEXTAUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: betterstack-secrets
+                  key: NEXTAUTH_SECRET
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: betterstack-secrets
+                  key: GOOGLE_CLIENT_ID
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: betterstack-secrets
+                  key: GOOGLE_CLIENT_SECRET
           readinessProbe:
             httpGet:
               path: /
@@ -184,7 +214,7 @@ spec:
     spec:
       containers:
         - name: pusher
-          image: adityavn03/betterstack1-pusher:d96152c9b215f357339aab28bb1c0231b1030924
+          image: adityavn03/betterstack1-pusher:latest
           imagePullPolicy: Always
           env:
             - name: NODE_OPTIONS
@@ -220,7 +250,7 @@ spec:
     spec:
       containers:
         - name: worker
-          image: adityavn03/betterstack1-worker:d96152c9b215f357339aab28bb1c0231b1030924
+          image: adityavn03/betterstack1-worker:latest
           imagePullPolicy: Always
           env:
             - name: NODE_OPTIONS
